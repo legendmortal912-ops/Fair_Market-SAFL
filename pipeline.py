@@ -1,4 +1,4 @@
-﻿import feedparser
+import feedparser
 import pandas as pd
 from dateutil import parser as date_parser
 import time
@@ -21,7 +21,7 @@ STATES           = ["Karnataka", "Telangana", "Tamil Nadu", "Maharashtra", "Utta
 OUTPUT_FILE      = "ai_policy_data.csv"
 GOOGLE_NEWS_BASE = "https://news.google.com/rss/search?q="
 MAX_PER_STATE    = 30    # Limit articles per state to keep runtime reasonable
-FETCH_TIMEOUT    = 8     # seconds per HTTP request
+FETCH_TIMEOUT    = (5, 8)  # (connect timeout, read timeout) in seconds
 
 # Browser User-Agent — required for Google News, also helps with other sites
 HEADERS = {
@@ -39,7 +39,7 @@ DIRECT_RSS_FEEDS = {
     "LiveMint - Technology":  "https://www.livemint.com/rss/technology",
     "LiveMint - Politics":    "https://www.livemint.com/rss/politics",
     "Indian Express - Tech":  "https://indianexpress.com/section/technology/feed/",
-    "Economic Times - Tech":  "https://economictimes.indiatimes.com/tech/rssfeeds/13357270.cms",
+    # Economic Times removed — their server hangs on reads
 }
 
 AI_KEYWORDS = [
@@ -103,7 +103,7 @@ def extract_summary(url, fallback):
     We limit MAX_PER_STATE to keep it manageable.
     """
     try:
-        article = Article(url, request_timeout=FETCH_TIMEOUT)
+        article = Article(url, request_timeout=8)
         article.download()
         article.parse()
         text = article.text or ""
