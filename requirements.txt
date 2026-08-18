@@ -1,0 +1,6 @@
+feedparser
+newspaper3k
+pandas
+python-dateutil
+requests
+lxml_html_clean
