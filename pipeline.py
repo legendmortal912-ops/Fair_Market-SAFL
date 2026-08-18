@@ -172,6 +172,61 @@ def fetch_google_news(state):
     print(f"{len(articles)} articles.")
     return articles
 
+def fetch_pib():
+    """
+    Scrape PIB (Press Information Bureau) press releases directly from
+    pib.gov.in/allRel.aspx — their RSS feeds return HTML, not XML, so
+    we scrape the HTML page instead using BeautifulSoup.
+    Filters for AI-related releases that mention one of our target states.
+    """
+    from bs4 import BeautifulSoup
+
+    print(f"[PIB] Scraping pib.gov.in press releases ...", end=" ", flush=True)
+    articles = []
+    try:
+        url = "https://pib.gov.in/allRel.aspx"
+        resp = requests.get(url, headers=HEADERS, timeout=FETCH_TIMEOUT)
+        resp.raise_for_status()
+
+        soup = BeautifulSoup(resp.text, "lxml")
+        # PIB lists press releases as <li> items with <a> links inside content divs
+        links = soup.select("ul li a")
+
+        for link in links:
+            headline = link.get_text(strip=True)
+            href = link.get("href", "")
+            if not href or not headline:
+                continue
+
+            # Build full URL
+            if href.startswith("http"):
+                full_url = href
+            else:
+                full_url = "https://pib.gov.in/" + href.lstrip("/")
+
+            combined = headline.lower()
+            if not is_ai_related(combined):
+                continue
+
+            state = detect_state(combined)
+            # PIB is national — if no state detected, still include as "National"
+            articles.append({
+                "state":       state or "National",
+                "headline":    headline,
+                "date":        "Unknown",   # Date not always on listing page
+                "source_name": "PIB",
+                "source_url":  full_url,
+                "rss_snippet": "",
+            })
+
+        print(f"{len(articles)} AI-related releases found.")
+    except requests.exceptions.Timeout:
+        print(f"[TIMEOUT] PIB")
+    except Exception as e:
+        print(f"[ERROR] PIB -- {e}")
+
+    return articles
+
 def fetch_direct_feeds():
     """Fetch verified Indian news RSS feeds; filter for AI + state relevance."""
     articles = []
@@ -287,7 +342,8 @@ def main():
     all_raw = []
     for state in STATES:
         all_raw.extend(fetch_google_news(state))
-    all_raw.extend(fetch_direct_feeds())
+    all_raw.extend(fetch_pib())           # PIB press releases (scraped)
+    all_raw.extend(fetch_direct_feeds())  # The Hindu, LiveMint, IE, ET
     print(f"\nTotal raw articles fetched: {len(all_raw)}")
 
     # Step 2: Deduplicate + summarize + categorize
