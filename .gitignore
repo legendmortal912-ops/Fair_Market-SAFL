@@ -1,17 +1,12 @@
-# Byte-compiled / optimized / DLL files
+.env
 __pycache__/
-*.py[cod]
-*$py.class
-
-# Virtual environments
-venv/
+*.pyc
+*.pyo
+*.pyd
+results/*
+!results/sweep_summary.json
+*.egg-info/
+dist/
 .venv/
-env/
-
-# IDE
-.vscode/
-.idea/
-
-# OS
 .DS_Store
 Thumbs.db

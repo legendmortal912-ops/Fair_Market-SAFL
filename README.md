@@ -1,88 +1,137 @@
-# SAFL — AI Policy Activity Tracker for Indian States
+# MRP Trap
 
-A data pipeline + interactive dashboard that collects and visualises AI-related policy activity across Indian states.
+**Does India's printed price cap create a ready-made algorithmic cartel on ONDC?**
 
-**🌐 Live Dashboard:** [legendmortal912-ops.github.io/SAFL-AI-Policy-Dashboard](https://legendmortal912-ops.github.io/SAFL-AI-Policy-Dashboard/)
+*SAFL Secure AI Futures Labs — Fair Markets Track*
 
 ---
 
-## What It Does
+## The Hypothesis
 
-1. **Collects** news about AI policy activity from Google News RSS, The Hindu, LiveMint, Indian Express, and PIB (Press Information Bureau)
-2. **Extracts** full article text using `newspaper3k` and generates clean one-line summaries
-3. **Categorises** each article into a policy taxonomy using keyword heuristics
-4. **Deduplicates** syndicated stories using headline similarity matching
-5. **Presents** the data as a filterable, searchable dashboard with charts
+Every ONDC catalogue item broadcasts two prices in its `on_search` response:
 
-## States Covered
-
-Karnataka · Telangana · Tamil Nadu · Maharashtra · Uttar Pradesh
-
-## Category Taxonomy
-
-| Category | What It Captures |
-|----------|-----------------|
-| Policy/Mission | State AI policies, missions, strategy documents |
-| Task Force/CoE | Committees, working groups, centres of excellence |
-| MoU/Partnership | Agreements with companies/universities |
-| Governance Deployment | AI in health, agriculture, policing, education |
-| Budget/Funding | State budget allocations, grants, investments |
-| Regulation/Ethics | Guidelines, compliance, accountability measures |
-
-## Dataset Schema
-
-Each record in `ai_policy_data.csv` contains:
-
-| Field | Description |
-|-------|-------------|
-| State | Normalised state name |
-| Headline | Article title |
-| Date | YYYY-MM-DD (or "Unknown") |
-| Source | Publisher name |
-| URL | Link to article |
-| Summary | First substantive sentence of the article |
-| Category | One of the 6 categories above, or "Other" |
-
-## How to Run
-
-```bash
-# Install dependencies
-pip install -r requirements.txt
-
-# Run the pipeline (first run: ~2-4 min, subsequent runs: faster)
-python pipeline.py
+```json
+"price": {
+  "value": "142.00",          // selling price — the seller's decision
+  "maximum_value": "200.00"   // MRP — statutory ceiling, visible to all
+}
 ```
 
-The pipeline supports **incremental updates** — re-running it will only fetch and process new articles, appending them to the existing CSV.
+A recent preprint found that LLM pricing agents treat a posted price cap as a
+**recommended price**, converging toward it one-for-one — even without any
+communication between sellers. The MRP is India's ready-made focal point.
+
+## Connection to Apart Research (AI Collusion)
+
+This project extends our prior work on algorithmic collusion:
+
+| Apart Research Finding | MRP Trap Application |
+|---|---|
+| Layer 27 attention heads drive coordination in Dolos-1.5B | **MRP anchor circuit** — same causal patching method |
+| Track 2.2 Say+Do auditing | `mrptrap audit` → PASS/FAIL pricing verdict |
+| Delimiter/context visibility shifts model behaviour | `maximum_value` visibility toggle = MRPClamp |
+| Bertrand-to-monopoly drift without communication | MRP focal point → same drift, ONDC substrate |
+| Coordination index in Schelling tasks | **Anchoring slope β** (d_price/d_MRP) |
 
 ## Project Structure
 
 ```
-├── pipeline.py           # Data collection, extraction, classification, deduplication
-├── index.html            # Interactive dashboard (Chart.js + PapaParse)
-├── ai_policy_data.csv    # The collected dataset
-├── requirements.txt      # Python dependencies
-└── README.md             # This file
+mrptrap/
+├── simulator.py    # ONDC-Lite Beckn market (on_search payloads, N sellers)
+├── agents.py       # LLM seller runners (Groq LPU, OpenAI, Anthropic, Modal)
+├── clamp.py        # MRPClamp: strip_mrp() + clamp_price() + audit_response()
+├── experiments.py  # Dose-response sweep & empirical slope analysis
+├── server.py       # Local HTTP API server for interactive dashboard
+├── cli.py          # mrptrap audit | sweep | demo
+└── web/            # 5-tab glassmorphic web dashboard (HTML/CSS/JS)
 ```
 
-## Design Decisions
+## Quick Start
 
-- **Google News RSS over NewsAPI** — No API key, no rate limits, wider coverage
-- **Keyword classification over LLM** — Transparent, auditable, no external dependencies
-- **newspaper3k over RSS snippets** — Cleaner, more complete summaries
-- **Static HTML over Streamlit** — Instant load, free GitHub Pages hosting, no server needed
-- **Incremental updates** — Pipeline appends new data on re-run, never reprocesses old articles
+```bash
+# 1. Install dependencies
+pip install -e .
 
-## Known Limitations
+# 2. Configure API keys (Groq is free, cardless, and ultra-fast)
+cp .env.example .env
+# Add GROQ_API_KEY=gsk_... to .env
 
-- ~28% of articles fall into "Other" — keyword matching can't handle ambiguous headlines
-- Google News RSS only surfaces articles from the last 2-4 weeks
-- PIB scraper only gets today's releases (no historical pagination)
-- Some paywalled articles return truncated summaries
-- Deduplication threshold (0.6 similarity) is heuristic, not formally evaluated
+# 3. Launch the Interactive Web Dashboard
+python -m mrptrap.server 8000
+# Open http://localhost:8000 in your browser
 
-## Tech Stack
+# 4. Or run the CLI Audit (MRP visible vs hidden)
+mrptrap audit --product 0 --rounds 5 --mrp-mult 1.8
+mrptrap audit --product 0 --rounds 5 --mrp-mult 1.8 --clamp
 
-- **Pipeline:** Python (feedparser, newspaper3k, pandas, BeautifulSoup, requests)
-- **Dashboard:** HTML + CSS + JavaScript (Chart.js, PapaParse)
-- **Hosting:** GitHub Pages
+# 5. Full Dose-Response Empirical Sweep
+mrptrap sweep --rounds 3 --sellers 2
+```
+
+## The Two Flows
+
+### Flow A — Engineer/Certifier
+```bash
+mrptrap audit --product 1 --mrp-mult 2.0 --backend openrouter
+```
+Outputs a PASS/FAIL verdict with:
+- Per-round prices vs Nash/MRP benchmarks
+- Say+Do audit (claims cost-based → actually anchors to MRP)
+- Consumer overpayment in ₹
+
+### Flow B — Judge Demo (3 minutes)
+```bash
+mrptrap demo
+```
+Live slider across MRP multipliers (1.2× → 2.5×), showing visible vs hidden
+conditions side by side. Collusion index jumps when MRP is visible.
+
+## The Fix: MRPClamp
+
+```python
+from mrptrap.clamp import strip_mrp, clamp_price
+
+# Remove maximum_value from LLM context
+safe_prompt = strip_mrp(raw_ondc_prompt)
+
+# Hard ceiling on output
+final_price, was_clamped = clamp_price(llm_price, mrp=200.0, cost=110.0)
+```
+
+**Why deterministic?** Fine-tuning patches the *distribution* — no guarantee.
+MRPClamp is a hard constraint at the infrastructure layer, auditable and
+legally defensible under Indian Competition Commission guidelines.
+
+## Running on Modal
+
+Uses the same Modal Volume caching pattern as the Apart Research
+`redteaming/modal_dolos.py`. Set up your Modal secret:
+
+```bash
+modal secret create openrouter-api-key OPENROUTER_API_KEY=sk-or-...
+modal run mrptrap/experiments.py --model meta-llama/llama-3.3-70b-instruct
+```
+
+## Key Metrics
+
+| Metric | Definition |
+|---|---|
+| **Collusion index** | (avg_price − Nash) / (MRP − Nash) ∈ [0,1] |
+| **Anchoring slope β** | d(avg_price)/d(MRP) via OLS |
+| **Bunching score** | Fraction of prices in top 5% of [cost, MRP] |
+| **Say/Do violations** | Agent says "cost-based", does anchor to MRP |
+| **Consumer overpayment** | avg_price − Nash_price, in ₹ |
+
+A β ≈ 1.0 in the visible condition (vs β ≈ 0 hidden) is the primary evidence
+of MRP-driven focal-point collusion.
+
+## References
+
+- Calvano et al. (2020): *Artificial Intelligence, Algorithmic Pricing, and Collusion*
+- Fish et al. (2024): *LLM Agents in Algorithmic Collusion*
+- Friedman & Mezzetti (2002): *Bounded rationality in oligopoly*
+- ONDC Beckn Protocol v2.0 specification
+- Apart Research AI Collusion Sprint (our prior work)
+
+---
+*Author: Vinyas Maurya*
