@@ -30,20 +30,17 @@
 }
 
 \title{\textbf{The MRP Trap: Auditing and Mitigating LLM Price Anchoring on ONDC's Open Network} \\
+\vspace{0.2em}
 \large Empirical Proof of Autonomous Algorithmic Collusion on Statutory Price Ceilings and the MRPClamp Protocol Defense}
 
 \author{
-    \textbf{Vinyas Maurya} \quad \textbf{Lakshay Sharma} \\
-    \texttt{\{vinyas25550, lakshay25291\}@iiitd.ac.in} \\
-    Department of Computer Science \\
-    Indraprastha Institute of Information Technology Delhi (IIIT Delhi) \\
+    \textbf{Vinyas Maurya} \qquad \textbf{Lakshay Sharma} \\
     \vspace{0.3em} \\
-    \textbf{Team Name:} \texttt{Evariste`} \quad \textbf{Track:} Technical (Fair Markets Track) \\
-    \textbf{Hackathon:} India Agentic AI Security Hackathon (SAFL 2026) \\
-    \textbf{Code \& Platform:} \url{https://github.com/legendmortal912-ops/Fair_Market-SAFL}
+    \small Team Evariste` \quad $\cdot$ \quad Technical Track (Fair Markets) \quad $\cdot$ \quad SAFL Hackathon 2026 \\
+    \small \textbf{Code \& Platform:} \url{https://github.com/legendmortal912-ops/Fair_Market-SAFL}
 }
 
-\date{October / November 2026}
+\date{October 2026}
 
 \begin{document}
 
@@ -57,7 +54,7 @@ In multi-seller Bertrand oligopoly simulations calibrated with real Indian FMCG 
 
 \section{Introduction and DPI Architectural Context}
 
-Digital Public Infrastructure (DPI) in India has transformed societal inclusion through population-scale platforms such as Unified Payments Interface (UPI), Aadhaar identity verification, and the Account Aggregator framework. The Open Network for Digital Commerce (ONDC) represents the extension of this unbundled architectural philosophy to retail commerce. Built on the open, decentralized Beckn protocol specification, ONDC eliminates the walled-garden monopolies of centralized platforms (such as Amazon and Flipkart) by unbundling Buyer Network Participants (BNPs), Gateways, and Seller Network Participants (SNPs).
+Digital Public Infrastructure (DPI) in India has transformed societal inclusion through population-scale platforms such as Unified Payments Interface (UPI), Aadhaar identity verification, and the Account Aggregator framework. The Open Network for Digital Commerce (ONDC) represents the extension of this unbundled architectural philosophy to retail commerce. Built on the open, decentralized Beckn protocol specification, ONDC eliminates the walled-garden monopolies of centralized platforms by unbundling Buyer Network Participants (BNPs), Gateways, and Seller Network Participants (SNPs).
 
 To manage pricing dynamically across thousands of Stock Keeping Units (SKUs) in real-time, merchants and SNPs are increasingly deploying autonomous pricing agents powered by Large Language Models (LLMs). While algorithmic pricing and market collusion have been explored in high-frequency financial markets and closed platforms, its interaction with open, broadcast DPI protocols remains unstudied. 
 
@@ -119,7 +116,7 @@ its generated chain-of-thought rationale claims compliance:
 \begin{quote}
 \texttt{\{"price": 195.0, "rationale": "I priced aggressively based on wholesale costs to capture consumer volume."\}}
 \end{quote}
-Here, the unit cost was \text{Rs.}~110 and the competitive Bertrand-Nash price was \text{Rs.}~125. While the model verbally claimed cost-based competition, its numerical output tracked the \text{Rs.}~200 MRP almost one-for-one. Prompt-level prohibitions are fundamentally ineffective because generative language models rationalize adherence while their output logits remain dominated by salient numerical anchors.
+Here, the unit cost was \text{Rs.}~110 and the competitive Bertrand-Nash price was \text{Rs.}~125. While the model verbally claimed cost-based competition, its numerical output tracked the \text{Rs.}~200 MRP almost one-for-one. Prompt-level guardrails fail because models rationalize adherence while their output logits remain dominated by salient numerical anchors.
 
 \section{Microeconomic Framework \& Collusion Metrics}
 
@@ -223,11 +220,11 @@ Maggi 2-Min Noodles 280g & Instant Food & 46.00 & 65.00 & 49.20 & 65.00 \\
 
 \section{The Defense: MRPClamp (``Constraint, Not Context'')}
 
-The core thesis of MRPClamp is that \textbf{regulatory constraints must be enforced as architectural boundaries, not cognitive prompt inputs}. 
+The central architectural principle behind MRPClamp is that \textbf{regulatory constraints must be enforced as architectural boundaries, not cognitive prompt inputs}. 
 
 \subsection{Two-Sided Middleware Pipeline}
 
-MRPClamp sits as an inline reverse proxy between the ONDC Gateway / Seller Network Participant and the model:
+MRPClamp operates as an inline reverse proxy between the ONDC Gateway / Seller Network Participant and the model:
 \begin{itemize}[leftmargin=*]
     \item \textbf{Ingress Sanitization (\texttt{strip\_mrp}):} The proxy intercepts incoming Beckn discovery feeds. It removes \texttt{price.maximum\_value} and scrubs natural-language references to ``MRP'' or statutory limits. The agent observes only \texttt{[unit\_cost, competitor\_prices]}. Deprived of a shared coordination beacon, the LLM defaults to Bertrand cost-plus competition.
     \item \textbf{Egress Clamping (\texttt{clamp\_price}):} When the agent emits price $p_{\text{llm}}$, the middleware evaluates $p_{\text{final}} = \min(p_{\text{llm}}, \text{MRP})$. If an agent hallucinates or bids excessively, the price is capped in application code, ensuring 100\% legal compliance with zero risk of Metrology Act violations.
