@@ -36,7 +36,7 @@
 \author{
     \textbf{Vinyas Maurya} \qquad \textbf{Lakshay Sharma} \\
     \vspace{0.3em} \\
-    \small Team Evariste` \quad $\cdot$ \quad Technical Track (Fair Markets) \quad $\cdot$ \quad SAFL Hackathon 2026 \\
+    \small Team Evariste \quad $\cdot$ \quad Technical Track (Fair Markets) \quad $\cdot$ \quad SAFL Hackathon 2026 \\
     \small \textbf{Code \& Platform:} \url{https://github.com/legendmortal912-ops/Fair_Market-SAFL}
 }
 
@@ -47,9 +47,9 @@
 \maketitle
 
 \begin{abstract}
-India's Open Network for Digital Commerce (ONDC) democratizes retail e-commerce by unbundling buyers, gateways, and sellers via the open Beckn protocol. Under Beckn catalog specifications, every item discovery payload publicly broadcasts both the active seller quotation (\texttt{price.value}) and the statutory Maximum Retail Price (\texttt{price.maximum_value}). While statutory price ceilings were designed as uninformative consumer protection boundaries, we uncover a systemic architectural failure mode: \textbf{autonomous Large Language Model (LLM) pricing agents treat public statutory caps as salient focal points for zero-communication tacit collusion}.
+India's Open Network for Digital Commerce (ONDC) democratizes retail e-commerce by unbundling buyers, gateways, and sellers via the open Beckn protocol. Under Beckn catalog specifications, every item discovery payload publicly broadcasts both the active seller quotation (\texttt{price.value}) and the statutory Maximum Retail Price (\texttt{price.maximum\_value}). While statutory price ceilings were designed as uninformative consumer protection boundaries, we uncover a systemic architectural failure mode: \textbf{autonomous Large Language Model (LLM) pricing agents treat public statutory caps as salient focal points for zero-communication tacit collusion}.
 
-In multi-seller Bertrand oligopoly simulations calibrated with real Indian FMCG staples, unmasked LLM seller agents exhibit an empirical price-to-MRP anchoring slope of $\beta = 0.8051$ ($R^2 = 0.9265, p < 0.001$), raising prices by \text{Rs.}~0.81 for every \text{Rs.}~1.00 increase in published MRP without explicit inter-agent communication. Prompts instructing agents to ``price competitively'' fail due to a severe \textit{Say-Do gap}, where agents rationalize cost-based pricing while executing monopolistic quotations. To resolve this, we introduce \textbf{MRPClamp}, a deterministic middleware defense that enforces ``MRP as constraint, not context'' by stripping MRP on ingress and clamping quotations on egress. Empirical parameter sweeps demonstrate that MRPClamp collapses the anchoring slope to $\beta = 0.0898$ (an $89\%$ reduction), restoring competitive Bertrand-Nash pricing, reducing consumer overpayment by $87\%$, and eliminating algorithmic collusion with $<0.1$\,ms runtime latency.
+In multi-seller Bertrand oligopoly simulations calibrated with real Indian FMCG staples, unmasked LLM seller agents exhibit an empirical price-to-MRP anchoring slope of $\beta = 0.8051$ ($R^2 = 0.9265, p < 0.001$), raising prices by Rs.~0.81 for every Rs.~1.00 increase in published MRP without explicit inter-agent communication. Prompts instructing agents to ``price competitively'' fail due to a severe \textit{Say-Do gap}, where agents rationalize cost-based pricing while executing monopolistic quotations. To resolve this, we introduce \textbf{MRPClamp}, a deterministic middleware defense that enforces ``MRP as constraint, not context'' by stripping MRP on ingress and clamping quotations on egress. Empirical parameter sweeps demonstrate that MRPClamp collapses the anchoring slope to $\beta = 0.0898$ (an $89\%$ reduction), restoring competitive Bertrand-Nash pricing, reducing consumer overpayment by $87\%$, and eliminating algorithmic collusion with $<0.1$\,ms runtime latency.
 \end{abstract}
 
 \section{Introduction and DPI Architectural Context}
@@ -78,7 +78,7 @@ Frontier LLMs have been pre-trained on extensive corpuses containing retail mark
 
 Listing~\ref{lst:beckn_vuln} contrasts the raw, vulnerable Beckn catalog payload against the sanitized payload produced by our runtime defense.
 
-\begin{lstlisting}[language=json, caption={Comparison of raw vs. sanitized Beckn \texttt{on\_search} catalog payloads.}, label={lst:beckn_vuln}]
+\begin{lstlisting}[language=json, caption={Comparison of raw vs. sanitized Beckn on\_search catalog payloads.}, label={lst:beckn_vuln}]
 // 1. Raw Beckn on_search Payload (Vulnerable - Broadcasts Focal Point)
 {
   "item": {
@@ -145,7 +145,7 @@ p_i^* = c_i + \frac{1}{\gamma \cdot (1 - s_i(p^*))}
 
 \paragraph{Monopoly Collusive Ceiling ($P^{\text{Monopoly}}$):} Under perfect joint-profit maximization, sellers coordinate on the price that maximizes aggregate network profit up to the statutory cap:
 \begin{equation}
-P^{\text{Monopoly}} = \min(p_{\text{joint}}^{\max}, \text{MRP})
+P^{\text{Monopoly}} = \min(p_{\text{joint}}^{\text{max}}, \text{MRP})
 \end{equation}
 
 \subsection{Quantitative Metrics}
@@ -386,3 +386,4 @@ Friedman, J.~W., \& Mezzetti, C. (2002).
 \end{thebibliography}
 
 \end{document}
+
